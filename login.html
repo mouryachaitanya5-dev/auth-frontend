@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Sign in</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="card" style="max-width:460px;margin:12px auto">
+      <div class="topline">
+        <div>
+          <h1>Sign in</h1>
+          <p class="lead">Enter your credentials.</p>
+        </div>
+        <div style="font-size:13px;color:var(--muted)"><a href="signup.html">Create account</a></div>
+      </div>
+
+      <form id="loginForm" novalidate>
+        <div class="form-row">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" required />
+          <div id="emailError" class="error" hidden></div>
+        </div>
+
+        <div class="form-row">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" required />
+          <div id="passwordError" class="error" hidden></div>
+        </div>
+
+        <button id="submitBtn" class="btn" type="submit">Sign in</button>
+        <div id="formMessage" role="status"></div>
+        <div class="footer-links">Use a secure device. For demo environments we store a token in localStorage; production should use httpOnly cookies.</div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { login, STORAGE_MODE } from './auth.js';
+
+    const form = document.getElementById('loginForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const formMessage = document.getElementById('formMessage');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      formMessage.textContent = '';
+      submitBtn.disabled = true;
+
+      const email = form.email.value.trim().toLowerCase();
+      const password = form.password.value;
+
+      // simple validation
+      if(!email || !password){
+        formMessage.textContent = 'Enter email and password';
+        formMessage.className = 'error';
+        submitBtn.disabled = false;
+        return;
+      }
+
+      try{
+        const res = await login({email,password});
+        if(res.ok){
+          // Two possibilities:
+          // - cookie mode: server set httpOnly cookie; just redirect
+          // - localStorage mode: token stored by auth.js; redirect
+          formMessage.textContent = 'Signed in. Redirecting…';
+          formMessage.className = 'success';
+          setTimeout(()=> window.location.href = 'dashboard.html', 600);
+        } else {
+          let body;
+          try{ body = await res.json(); }catch(e){}
+          const msg = body?.error || body?.message || `Sign-in failed (${res.status})`;
+          formMessage.textContent = msg;
+          formMessage.className = 'error';
+        }
+      }catch(err){
+        formMessage.textContent = 'Network error';
+        formMessage.className = 'error';
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

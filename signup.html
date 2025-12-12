@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Sign up</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="card" style="max-width:520px;margin:12px auto">
+      <div class="topline">
+        <div>
+          <h1>Create an account</h1>
+          <p class="lead">Register to access your dashboard.</p>
+        </div>
+        <div style="font-size:13px;color:var(--muted)"><a href="login.html">Sign in</a></div>
+      </div>
+
+      <form id="signupForm" novalidate>
+        <div class="form-row">
+          <label for="name">Full name</label>
+          <input id="name" name="name" type="text" required />
+          <div id="nameError" class="error" hidden></div>
+        </div>
+
+        <div class="form-row">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" required />
+          <div id="emailError" class="error" hidden></div>
+        </div>
+
+        <div class="form-row">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" required minlength="8" />
+          <small class="hint">At least 8 characters. Use letters and numbers for stronger password.</small>
+          <div id="passwordError" class="error" hidden></div>
+        </div>
+
+        <div class="form-row">
+          <label for="confirm">Confirm password</label>
+          <input id="confirm" name="confirm" type="password" required />
+          <div id="confirmError" class="error" hidden></div>
+        </div>
+
+        <button id="submitBtn" class="btn" type="submit">Create account</button>
+        <div id="formMessage" role="status"></div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { signup, STORAGE_MODE } from './auth.js';
+
+    const form = document.getElementById('signupForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const formMessage = document.getElementById('formMessage');
+
+    function showError(el, msg){
+      el.textContent = msg;
+      el.hidden = false;
+    }
+    function clearError(el){
+      el.textContent = '';
+      el.hidden = true;
+    }
+
+    function validateEmail(email){
+      // conservative email regex
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      formMessage.textContent = '';
+      submitBtn.disabled = true;
+
+      const name = form.name.value.trim();
+      const email = form.email.value.trim().toLowerCase();
+      const password = form.password.value;
+      const confirm = form.confirm.value;
+
+      // clear previous
+      clearError(document.getElementById('nameError'));
+      clearError(document.getElementById('emailError'));
+      clearError(document.getElementById('passwordError'));
+      clearError(document.getElementById('confirmError'));
+
+      // client validation
+      let ok = true;
+      if(name.length < 2) { showError(document.getElementById('nameError'), 'Please enter your full name.'); ok = false; }
+      if(!validateEmail(email)) { showError(document.getElementById('emailError'), 'Enter a valid email.'); ok = false; }
+      if(password.length < 8) { showError(document.getElementById('passwordError'), 'Password must be at least 8 characters.'); ok = false; }
+      if(password !== confirm) { showError(document.getElementById('confirmError'), 'Passwords do not match.'); ok = false; }
+
+      if(!ok){ submitBtn.disabled = false; return; }
+
+      try{
+        const res = await signup({name,email,password});
+        if(res.status === 201){
+          formMessage.textContent = 'Account created. Redirecting to login…';
+          formMessage.className = 'success';
+          setTimeout(()=> window.location.href = 'login.html', 900);
+        } else {
+          // try to parse error message
+          let body;
+          try{ body = await res.json(); }catch(e){}
+          const msg = body?.error || body?.message || `Signup failed (${res.status})`;
+          formMessage.textContent = msg;
+          formMessage.className = 'error';
+        }
+      }catch(err){
+        formMessage.textContent = 'Network error';
+        formMessage.className = 'error';
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

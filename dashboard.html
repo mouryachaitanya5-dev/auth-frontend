@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Dashboard</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="card" style="max-width:880px;margin:12px auto">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h1 id="title">Dashboard</h1>
+        <div>
+          <button id="logoutBtn" class="btn" style="background:#ef4444">Sign out</button>
+        </div>
+      </div>
+      <p id="userInfo" class="lead">Loading user…</p>
+
+      <div id="content">
+        <!-- Protected content stub -->
+        <p>Protected content visible to authenticated users.</p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { me, clearToken, protectRoute, STORAGE_MODE, API_BASE } from './auth.js';
+
+    const userInfo = document.getElementById('userInfo');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    // Protect route: this will attempt /api/auth/me and redirect to login if not authenticated.
+    (async function(){
+      try{
+        const data = await me();
+        // expected: { user } or user object directly depending on API
+        const user = data.user || data;
+        userInfo.textContent = `Signed in as ${user.name || user.email} • role: ${user.role || 'user'}`;
+      }catch(err){
+        // redirect to login
+        window.location.href = 'login.html';
+      }
+    })();
+
+    logoutBtn.addEventListener('click', async () => {
+      // For cookie mode, call server logout endpoint to clear cookie (if you have one)
+      if(STORAGE_MODE === 'cookie'){
+        try{
+          await fetch(API_BASE + '/api/auth/logout', { method:'POST', credentials:'include' });
+        }catch(e){}
+      }else{
+        // localStorage mode: just clear
+        clearToken();
+      }
+      window.location.href = 'login.html';
+    });
+  </script>
+</body>
+</html>
