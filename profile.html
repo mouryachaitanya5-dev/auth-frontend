@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>User Profile</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div class="container">
+  <div class="card" style="max-width:720px;margin:auto">
+
+    <h1>My Profile</h1>
+    <p class="lead">View and update your profile information</p>
+
+    <!-- PROFILE VIEW -->
+    <div id="profileView">
+      <img id="avatarView" src="" alt="Avatar" style="width:80px;height:80px;border-radius:50%;object-fit:cover" />
+      <p><strong>Name:</strong> <span id="nameView"></span></p>
+      <p><strong>Email:</strong> <span id="emailView"></span></p>
+      <p><strong>Bio:</strong> <span id="bioView"></span></p>
+
+      <button id="editBtn" class="btn">Edit Profile</button>
+    </div>
+
+    <!-- PROFILE EDIT FORM -->
+    <form id="profileForm" hidden>
+      <div class="form-row">
+        <label>Name</label>
+        <input type="text" id="nameInput" required />
+      </div>
+
+      <div class="form-row">
+        <label>Bio</label>
+        <textarea id="bioInput" rows="4"></textarea>
+      </div>
+
+      <div class="form-row">
+        <label>Avatar URL</label>
+        <input type="url" id="avatarInput" />
+        <small class="hint">Paste an image URL</small>
+      </div>
+
+      <img id="avatarPreview" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-top:10px" />
+
+      <button type="submit" class="btn">Save Changes</button>
+      <button type="button" id="cancelBtn" class="btn" style="background:#6b7280">Cancel</button>
+
+      <div id="formMessage"></div>
+    </form>
+
+  </div>
+</div>
+
+<script type="module" src="profile.js"></script>
+</body>
+</html>
